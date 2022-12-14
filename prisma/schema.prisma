@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Notification {
+  id          String    @id
+  recipientId String
+  content     String
+  category    String
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+  // Podemos ter um "recipientId" que não necessariamente esteja em uma tabela
+  // neste banco de dados
+  // mas sim que seja um id externo (em outros serviços inclusive)
+  // este recipientId é informação suficiente para que seja possível
+  // listar todas as notificações de um usuário em específico, pois o frontend
+  // possuirá informação de vários serviços...
+  // o serviço (micro) de auth por exemplo, entrega este recipientId, e o resto
+  // é história :P
+
+  // a necessidade de criar este index é pq buscaremos sempre TODAS notificações
+  // de um ÚNICO usuário, a query ficará mais leve e consequentemente a 
+  // requisição mais rápida.
+  @@index([recipientId])
+}
